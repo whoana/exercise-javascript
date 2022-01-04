@@ -4,10 +4,14 @@
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
+    background-color: aqua;
 }
 
 .playground div {
     width: 20px;
     height: 20px;
-    background-color: aqua;
+}
+
+.tetromino {
+    background-color: brown;
 }
