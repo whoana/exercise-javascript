@@ -1,4 +1,5 @@
 //after being loaded document.
+//https://ko.wikipedia.org/wiki/테트리스
 document.addEventListener('DOMContentLoaded',() => {
      
     let squares = Array.from(document.querySelectorAll('.playground div'))  
