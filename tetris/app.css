@@ -10,6 +10,7 @@
 .playground div {
     width: 20px;
     height: 20px;
+    outline: auto;
 }
 
 .tetromino {

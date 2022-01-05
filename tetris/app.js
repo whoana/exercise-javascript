@@ -9,6 +9,7 @@ class Point {
 }
 
 class Playground {
+    
     constructor(width, height){
         this.width = width
         this.height = height
@@ -18,7 +19,6 @@ class Playground {
         this.playground = document.getElementById('playground')
         for(let x = 0 ; x < this.width ; x ++) {
             for(let y = 0 ; y < this.height ; y++ ){
-                let point = new Point(x, y)
                 let block = document.createElement('div')
                 block.id = `bl${x}-${y}`
                 this.playground.appendChild(block)
@@ -27,6 +27,45 @@ class Playground {
         this.playground.classList.add('playground')
     }
 }
+
+const BLOCK_TYPE = {
+    I : 0, 
+    J : 1,
+    L : 2,
+    O : 3,
+    S : 4,
+    T : 5,
+    Z : 6,
+}
+
+
+
+class Tetromino {
+    constructor(type, startPoint){
+        this.type = type
+        this.startPoint = startPoint
+        this.blocks = null;
+        this.init()
+    }
+
+    init(){
+        switch(type){
+            case BLOCK_TYPE.I : 
+                [
+                    [[0,1], [1,1], [2,1], [3,1]],
+                    [[0,1], [1,1], [2,1], [3,1]],
+                    [[0,1], [1,1], [2,1], [3,1]],
+                    [[0,1], [1,1], [2,1], [3,1]],
+                ]
+                break;
+            default :
+
+        } 
+    }
+}
+
+
+
 
 const playgroundWith = 10 
 const playgroundHeight = 20  
@@ -37,6 +76,9 @@ document.addEventListener('DOMContentLoaded',() => {
      
     const playground = new Playground(playgroundWith, playgroundHeight);
     playground.build();
+
+
+
 
     /*
 
