@@ -88,13 +88,13 @@ const POSITIONS ={
     [sTetromino]: [
         [[0,1], [1,1], [2,1], [3,1]],
         [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [1,3]],
         [[0,1], [1,1], [2,1], [3,1]],
     ],
     [tTetromino]: [
         [[0,1], [1,1], [1,0], [2,1]],
-        [[1,0], [1,1], [1,0], [2,1]],
         [[1,0], [1,1], [1,2], [2,1]],
+        [[0,1], [1,1], [1,2], [2,1]],
         [[0,1], [1,0], [1,1], [1,2]],
     ],
     [zTetromino]: [
@@ -114,53 +114,57 @@ class Tetromino {
     constructor(type, direction, current, maps){
         this.type = type 
         this.direction = direction
-        this.position = POSITIONS[type][direction];
+        this.position = POSITIONS[this.type][this.direction];
         this.current = current
         this.maps = maps
     }
     
-    show(point){
-        this.draw(point)
+    show(){
+        this.draw()
     }
 
     move(point){ 
-        if(this.endOfMap(point)) { 
-            return
-        }
+        if(this.endOfMap(this.position, point)) return
         this.erase()        
         this.current.x += point.x
         this.current.y += point.y
         this.draw()
     }
 
-    endOfMap(point){
-        return this.position.some(element => {   
-            let col = element[0] + current.x + point.x
-            let row = element[1] + point.y
+    endOfMap(position, point){
+        return position.some(element => {   
+            let col = element[0] + this.current.x + point.x
+            let row = element[1] + this.current.y + point.y
             return row < 0 || col < 0 || this.maps.length <= row || this.maps[row].length <= col
         })
     }
 
     draw(){ 
-        this.position.map(element => {            
+        this.position.forEach(element => {   
             let col = element[0] + this.current.x
             let row = element[1] + this.current.y
             this.maps[row][col].classList.add('tetromino')
         });
     }
 
-    erase(maps){
-        this.position.map(element => {            
-            let col = element[0]
-            let row = element[1]
+    erase(){
+        this.position.forEach(element => {            
+            let col = element[0] + this.current.x
+            let row = element[1] + this.current.y
             this.maps[row][col].classList.remove('tetromino')
         });
     }
  
 
-    rotate(map){
- 
-
+    rotate(){
+        //debugger
+        let direction = this.direction == 3 ? 0 : this.direction + 1
+        let position = POSITIONS[this.type][direction]
+        if(this.endOfMap(position, new Point(0,0))) return
+        this.erase()        
+        this.direction = direction
+        this.position = position
+        this.draw()
     }
 }
  
@@ -179,13 +183,39 @@ document.addEventListener('DOMContentLoaded',() => {
 
     console.log(playground.maps)
  
-    let tetromino = new Tetromino(tTetromino, 0)
-    tetromino.show(playground.maps, new Point(0,0))
+    let tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground.maps)
+    tetromino.show()
+
+
+    //요기 문제있다.
+    let timerId = setInterval(()=>{
+        
+        moveDown()    
+        if(tetromino.endOfMap(tetromino.position, new Point(0,0))) {
+            freeze()
+            anotherTetromino()
+        }else{
+            console.log(tetromino.position)
+            console.log(tetromino.current)
+        }
+    },1000);
+
+    let oldTetromino
+    function anotherTetromino(){
+        oldTetromino = Object.assign({}, tetromino)
+        tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground.maps)
+        tetromino.show()
+    }
+
+    function freeze(){
+        console.log("I died.")
+    }
 
     ///move 
     function move(event){ 
         switch(event.key) {
             case 'ArrowUp' : 
+                rotate()
                 break
             case 'ArrowDown' : 
                 moveDown()
@@ -201,16 +231,20 @@ document.addEventListener('DOMContentLoaded',() => {
         }
     }
 
+    function rotate(){
+        tetromino.rotate()
+    }
+
     function moveDown(){     
-        tetromino.move(playground.maps, new Point(0,1))
+        tetromino.move(new Point(0,1))
     }
 
     function moveLeft(){     
-        tetromino.move(playground.maps, new Point(-1,0))
+        tetromino.move(new Point(-1,0))
     } 
 
     function moveRight(){  
-        tetromino.move(playground.maps, new Point(1,0))
+        tetromino.move(new Point(1,0))
     }
     document.addEventListener('keydown', move)
 
