@@ -111,41 +111,41 @@ const POSITIONS ={
 //retation : cw, ccw 
 //position : a
 class Tetromino {
-    constructor(type, positionIndex){
+    constructor(type, direction, current, maps){
         this.type = type 
-        this.positionIndex = positionIndex
-        this.position = POSITIONS[type][positionIndex];
+        this.direction = direction
+        this.position = POSITIONS[type][direction];
+        this.current = current
+        this.maps = maps
     }
     
-    show(maps, point){
-        this.draw(maps, point)
+    show(point){
+        this.draw(point)
     }
 
-    move(maps, point){
-        this.backup()
-        if(this.endOfMap(maps, point)) { 
+    move(point){ 
+        if(this.endOfMap(point)) { 
             return
         }
-        this.erase(maps)        
-        this.draw(maps, point)
+        this.erase()        
+        this.current.x += point.x
+        this.current.y += point.y
+        this.draw()
     }
 
-    endOfMap(maps, point){
+    endOfMap(point){
         return this.position.some(element => {   
-            let col = element[0] + point.x
+            let col = element[0] + current.x + point.x
             let row = element[1] + point.y
-            return row < 0 || col < 0 || maps.length <= row || maps[row].length <= col
-            //return maps[row][col] === undefined
+            return row < 0 || col < 0 || this.maps.length <= row || this.maps[row].length <= col
         })
     }
 
-    draw(maps, point){
+    draw(){ 
         this.position.map(element => {            
-            element[0] += point.x
-            element[1] += point.y
-            let col = element[0]
-            let row = element[1]
-            maps[row][col].classList.add('tetromino')
+            let col = element[0] + this.current.x
+            let row = element[1] + this.current.y
+            this.maps[row][col].classList.add('tetromino')
         });
     }
 
@@ -153,23 +153,13 @@ class Tetromino {
         this.position.map(element => {            
             let col = element[0]
             let row = element[1]
-            maps[row][col].classList.remove('tetromino')
+            this.maps[row][col].classList.remove('tetromino')
         });
     }
-
-    backup(){
-        this.backupPosition = [...this.position]
-    }
+ 
 
     rotate(map){
-
-        this.backup() 
-        this.erase(maps)        
-
-        this.positionIndex = this.positionIndex == 3 ? 0 : this.positionIndex + 1
-        this.position = POSITIONS[type][positionIndex];
-        
-        this.draw(maps, point)
+ 
 
     }
 }
