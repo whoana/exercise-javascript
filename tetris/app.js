@@ -12,16 +12,17 @@ class Playground {
     
     constructor(width, height){
         this.width = width
-        this.height = height
-        this.playground = null;
+        this.height = height        
+        this.maps = Array.from(Array(height),() => Array(width).fill(null))
     }
     build(){
         this.playground = document.getElementById('playground')
-        for(let x = 0 ; x < this.width ; x ++) {
-            for(let y = 0 ; y < this.height ; y++ ){
-                let block = document.createElement('div')
-                block.id = `bl${x}-${y}`
-                this.playground.appendChild(block)
+        for(let y = 0 ; y < this.height ; y++ ){
+            for(let x = 0 ; x < this.width ; x ++) {
+                let point = document.createElement('div')
+                point.id = `p-${x}-${y}`
+                this.maps[y][x] = point
+                this.playground.appendChild(point)
             }
         }
         this.playground.classList.add('playground')
@@ -38,32 +39,141 @@ const BLOCK_TYPE = {
     Z : 6,
 }
 
+const ROTATION = {
+    CW : 0, 
+    CCW: 1,
+}
+const iTetromino = Symbol('iTetromino')
+const jTetromino = Symbol('jTetromino')
+const lTetromino = Symbol('lTetromino')
+const oTetromino = Symbol('oTetromino')
+const sTetromino = Symbol('sTetromino')
+const tTetromino = Symbol('tTetromino')
+const zTetromino = Symbol('zTetromino')
+
+const COLORS = {
+    [iTetromino]: "yellow",
+    [jTetromino]: "yellow",
+    [lTetromino]: "yellow",
+    [oTetromino]: "yellow",
+    [sTetromino]: "yellow",
+    [tTetromino]: "purple",
+    [zTetromino]: "yellow"
+}
+const POSITIONS ={
+    [iTetromino]: [
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+    ],
+    [jTetromino]: [
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+    ],
+    [lTetromino]: [
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+    ],
+    [oTetromino]: [
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+    ],
+    [sTetromino]: [
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+    ],
+    [tTetromino]: [
+        [[0,1], [1,1], [1,0], [2,1]],
+        [[1,0], [1,1], [1,0], [2,1]],
+        [[1,0], [1,1], [1,2], [2,1]],
+        [[0,1], [1,0], [1,1], [1,2]],
+    ],
+    [zTetromino]: [
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [3,1]],
+    ]
 
 
+}
+ 
+
+//retation : cw, ccw 
+//position : a
 class Tetromino {
-    constructor(type, startPoint){
-        this.type = type
-        this.startPoint = startPoint
-        this.blocks = null;
-        this.init()
+    constructor(type, positionIndex){
+        this.type = type 
+        this.positionIndex = positionIndex
+        this.position = POSITIONS[type][positionIndex];
+    }
+    
+    show(maps, point){
+        this.draw(maps, point)
     }
 
-    init(){
-        switch(type){
-            case BLOCK_TYPE.I : 
-                [
-                    [[0,1], [1,1], [2,1], [3,1]],
-                    [[0,1], [1,1], [2,1], [3,1]],
-                    [[0,1], [1,1], [2,1], [3,1]],
-                    [[0,1], [1,1], [2,1], [3,1]],
-                ]
-                break;
-            default :
+    move(maps, point){
+        this.backup()
+        if(this.endOfMap(maps, point)) { 
+            return
+        }
+        this.erase(maps)        
+        this.draw(maps, point)
+    }
 
-        } 
+    endOfMap(maps, point){
+        return this.position.some(element => {   
+            let col = element[0] + point.x
+            let row = element[1] + point.y
+            return row < 0 || col < 0 || maps.length <= row || maps[row].length <= col
+            //return maps[row][col] === undefined
+        })
+    }
+
+    draw(maps, point){
+        this.position.map(element => {            
+            element[0] += point.x
+            element[1] += point.y
+            let col = element[0]
+            let row = element[1]
+            maps[row][col].classList.add('tetromino')
+        });
+    }
+
+    erase(maps){
+        this.position.map(element => {            
+            let col = element[0]
+            let row = element[1]
+            maps[row][col].classList.remove('tetromino')
+        });
+    }
+
+    backup(){
+        this.backupPosition = [...this.position]
+    }
+
+    rotate(map){
+
+        this.backup() 
+        this.erase(maps)        
+
+        this.positionIndex = this.positionIndex == 3 ? 0 : this.positionIndex + 1
+        this.position = POSITIONS[type][positionIndex];
+        
+        this.draw(maps, point)
+
     }
 }
-
+ 
 
 
 
@@ -77,70 +187,42 @@ document.addEventListener('DOMContentLoaded',() => {
     const playground = new Playground(playgroundWith, playgroundHeight);
     playground.build();
 
+    console.log(playground.maps)
+ 
+    let tetromino = new Tetromino(tTetromino, 0)
+    tetromino.show(playground.maps, new Point(0,0))
 
-
-
-    /*
-
-
-    //building a playground having 20 rows and 10 cols
-    let squares = Array.from(document.querySelectorAll('.playground div'))  
-
-    let playground = Array.from(Array(rowNum),() => Array(colNum).fill(null))
-    for(let i = 0 ; i < rowNum ; i ++){
-         
-        let start = i * colNum
-        let end = start + colNum
-        playground[i] = squares.slice(start, end)
-
+    ///move 
+    function move(event){ 
+        switch(event.key) {
+            case 'ArrowUp' : 
+                break
+            case 'ArrowDown' : 
+                moveDown()
+                break
+            case 'ArrowRight' : 
+                moveRight()      
+                break
+            case 'ArrowLeft' :  
+                moveLeft() 
+                break
+            default:
+                break;
+        }
     }
 
-    const iTetromino = [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-    ]
-    const tetrominos = [iTetromino]
+    function moveDown(){     
+        tetromino.move(playground.maps, new Point(0,1))
+    }
 
-    let deltaX = 4
-    let deltaY = 0
-    tetrominos[0][0].forEach(element => {
-        let row = element[0] + deltaY
-        let col = element[1] + deltaX
-        playground[row][col].classList.add('tetromino')
-        //playground[element[0]][element[1]].classList.remove('tetromino')
-    })
+    function moveLeft(){     
+        tetromino.move(playground.maps, new Point(-1,0))
+    } 
 
-    let timeId = setInterval(()=>{
+    function moveRight(){  
+        tetromino.move(playground.maps, new Point(1,0))
+    }
+    document.addEventListener('keydown', move)
 
-        let isBottom = tetrominos[0][0].some(element => {
-            let row = element[0] + deltaY 
-            return (row == 19)  
-        })
-
-        if(isBottom){
-            clearInterval(timeId)
-            console.log("here is bottom line.")
-            return
-        }
-
-        tetrominos[0][0].forEach(element => {
-            let row = element[0] + deltaY
-            let col = element[1] + deltaX
-            playground[row][col].classList.remove('tetromino')
-        })
-        
-        deltaY = deltaY + 1
-       
-        tetrominos[0][0].forEach(element => {
-            let row = element[0] + deltaY
-            let col = element[1] + deltaX
-            playground[row][col].classList.add('tetromino')
-        })
-
-    }, 1000)
-
-
-    */
+ 
 })
