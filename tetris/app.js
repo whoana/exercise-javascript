@@ -112,7 +112,7 @@ class Playground {
         return x < 0 || x > this.width - 1 || y > this.height - 1
     }
 
-    isBottom(x, y){
+    isBottom(y){
         return y >= this.height - 1
     }
 }
@@ -180,23 +180,37 @@ class Tetromino {
         this.draw()
     }
 
-    playMore(){
-        let isBottom = this.position.some(element => this.playground.isBottom(element[0] + this.current.x, element[1] + this.current.y))
-        if(!isBottom){
-            let atFreezed = this.position.some(element => {
-                    let col = element[0] + this.current.x
-                    let row = element[1] + this.current.y  + 1
-                    this.playground.maps[row][col].classList.contains('freezed')
-                }
-            )
-            if(atFreezed) {
-                return false
-            }else{
-                return true
-            }
-        }else{
-            return false
-        }
+
+    isBottom(){
+        return this.position.some(element => { 
+            let y = element[1] + this.current.y 
+            return this.playground.isBottom(y)
+        })
+    }
+
+    hasFreezed(){
+        return this.position.some(element => {
+            let x = element[0] + this.current.x
+            let y = element[1] + this.current.y 
+            return  this.playground.maps[y+1][x].classList.contains('freezed')
+        })
+
+
+        // if(!isBottom){
+        //     let atFreezed = this.position.some(element => {
+        //             let col = element[0] + this.current.x
+        //             let row = element[1] + this.current.y  + 1
+        //             return this.playground.maps[row][col].classList.contains('freezed')
+        //         }
+        //     )
+        //     if(atFreezed) {
+        //         return false
+        //     }else{
+        //         return true
+        //     }
+        // }else{
+        //     return false
+        // }
     }
 
     freeze(){
@@ -226,16 +240,18 @@ document.addEventListener('DOMContentLoaded',() => {
     let tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground)
     tetromino.show()
 
-
+    /*
     let timerId = setInterval(()=>{
         
         if(!tetromino.playMore()){
             tetromino.freeze()
             anotherTetromino()
+        }else{
+            moveDown()
         }
-        moveDown()
-    },1000);
 
+    },1000);
+    */
     /*
     let timerId = setInterval(()=>{
          
@@ -286,7 +302,20 @@ document.addEventListener('DOMContentLoaded',() => {
     }
 
     function moveDown(){     
-        tetromino.move(new Point(0,1))
+        //tetromino.move(new Point(0,1))
+        let isBottom = tetromino.isBottom()
+        let hasFreezed = tetromino.hasFreezed()
+
+        console.log(tetromino)
+        console.log(`isBottom:${isBottom}, hasFreezed:${hasFreezed}`)
+
+        if(isBottom || hasFreezed){
+            console.log('no more play')
+            tetromino.freeze()
+            anotherTetromino()
+        }else{
+            tetromino.move(new Point(0,1))
+        }
     }
 
     function moveLeft(){     
