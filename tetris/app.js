@@ -228,12 +228,12 @@ document.addEventListener('DOMContentLoaded',() => {
 
 
     let timerId = setInterval(()=>{
-        moveDown()
+        
         if(!tetromino.playMore()){
             tetromino.freeze()
             anotherTetromino()
         }
-        
+        moveDown()
     },1000);
 
     /*
