@@ -145,10 +145,7 @@ class Tetromino {
     endOfMap(position, point){
         return position.some(element => this.playground.isOutOfBoundary(element[0] + this.current.x + point.x, element[1] + this.current.y + point.y))
     }
-
-    // isBottom(){
-    //     return position.some(element => this.playground.isBottom(element[0] + this.current.x, element[1] + this.current.y))
-    // }
+ 
     
     draw(){ 
         this.position.forEach(element => {   
@@ -188,29 +185,12 @@ class Tetromino {
         })
     }
 
-    hasFreezed(){
+    nextFreezed(){
         return this.position.some(element => {
             let x = element[0] + this.current.x
             let y = element[1] + this.current.y 
             return  this.playground.maps[y+1][x].classList.contains('freezed')
         })
-
-
-        // if(!isBottom){
-        //     let atFreezed = this.position.some(element => {
-        //             let col = element[0] + this.current.x
-        //             let row = element[1] + this.current.y  + 1
-        //             return this.playground.maps[row][col].classList.contains('freezed')
-        //         }
-        //     )
-        //     if(atFreezed) {
-        //         return false
-        //     }else{
-        //         return true
-        //     }
-        // }else{
-        //     return false
-        // }
     }
 
     freeze(){
@@ -231,6 +211,8 @@ const playgroundWith = 10
 const playgroundHeight = 20  
  
 
+//수정할 내용 
+//컨트롤러 함수를 테트로미노 클래스에서 컨트롤러 클래스를 만들고 그리로 옮기자.
 
 document.addEventListener('DOMContentLoaded',() => {
      
@@ -239,32 +221,7 @@ document.addEventListener('DOMContentLoaded',() => {
 
     let tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground)
     tetromino.show()
-
-    /*
-    let timerId = setInterval(()=>{
-        
-        if(!tetromino.playMore()){
-            tetromino.freeze()
-            anotherTetromino()
-        }else{
-            moveDown()
-        }
-
-    },1000);
-    */
-    /*
-    let timerId = setInterval(()=>{
-         
-        if(tetromino.endOfMap(tetromino.position, new Point(0,1))) {
-            freeze()
-            anotherTetromino()
-        }else{
-            moveDown() 
-        }
-
-    },1000);
-    */
-
+ 
     let oldTetromino
     function anotherTetromino(){
         oldTetromino = Object.assign({}, tetromino)
@@ -284,7 +241,8 @@ document.addEventListener('DOMContentLoaded',() => {
                 rotate()
                 break
             case 'ArrowDown' : 
-                moveDown()
+                //moveDown()
+                moveToDown()
                 break
             case 'ArrowRight' : 
                 moveRight()      
@@ -302,14 +260,10 @@ document.addEventListener('DOMContentLoaded',() => {
     }
 
     function moveDown(){     
-        //tetromino.move(new Point(0,1))
-        let isBottom = tetromino.isBottom()
-        let hasFreezed = tetromino.hasFreezed()
 
-        console.log(tetromino)
-        console.log(`isBottom:${isBottom}, hasFreezed:${hasFreezed}`)
+        let isBottom = tetromino.isBottom() ? true : tetromino.nextFreezed()
 
-        if(isBottom || hasFreezed){
+        if(isBottom){
             console.log('no more play')
             tetromino.freeze()
             anotherTetromino()
@@ -325,6 +279,92 @@ document.addEventListener('DOMContentLoaded',() => {
     function moveRight(){  
         tetromino.move(new Point(1,0))
     }
+
+     
+    
+    let current = new Point(0, 0);
+
+    function erase(){
+        tetromino.position.forEach(element => {            
+            let col = element[0] + current.x
+            let row = element[1] + current.y
+            playground.maps[row][col].classList.remove('tetromino')
+            playground.maps[row][col].style.backgroundColor = ''
+        });
+    }
+
+    function draw(point){
+        tetromino.position.forEach(element => {   
+            let col = element[0] + current.x
+            let row = element[1] + current.y
+            playground.maps[row][col].classList.add('tetromino')
+            playground.maps[row][col].style.backgroundColor = COLORS[tetromino.type]
+        });
+    }
+
+
+    function isMovableDown(){
+        let isBottom = tetromino.position.some(element => { 
+            let y = element[1] + current.y
+            return playground.isBottom(y)
+        })
+         
+        return isBottom ? false : !tetromino.position.some(element => {
+            let x = element[0] + current.x
+            let y = element[1] + current.y + 1 
+            return playground.maps[y][x].classList.contains('freezed')
+        }) 
+    }
+
+    function isMovableLeft(){
+
+    }
+
+    function isMovableRight(){
+
+    }
+
+    function moveToDown(){
+        let movable = isMovableDown()
+        if(movable) {
+            erase()        
+            current.y += 1
+            draw()
+        }else{
+            //tetromino.freeze()
+            //anotherTetromino()   
+            //여기에 프리즈하고 
+            //새로운 테트로미노 하나 생성해라.
+        }
+    }
+
+    function moveToLeft(){
+        let movable = isMovableLeft()
+        if(ok) {
+            erase()        
+            current.x -= 1
+            draw()
+        }
+    }
+
+    function moveToRight(){
+        let movable = isMovableRight()
+        if(ok) {
+            erase()        
+            current.x += 1
+            draw()
+        }
+    }
+
+
+
+
+
+
+
+
+
+
     document.addEventListener('keydown', move)
 
  
