@@ -1,6 +1,6 @@
 .playground {
-    width: 200px;
-    height: 400px;
+    width: 300px;
+    height: 600px;
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -8,8 +8,8 @@
 }
 
 .playground div {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     outline: auto;
 }
 

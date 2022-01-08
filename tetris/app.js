@@ -29,7 +29,7 @@ const COLORS = {
     [lTetromino]: "grey",
     [oTetromino]: "grey",
     [sTetromino]: "grey",
-    [tTetromino]: "grey",
+    [tTetromino]: "yellow",
     [zTetromino]: "grey"
 }
 const POSITIONS ={
@@ -75,11 +75,15 @@ const POSITIONS ={
         [[0,1], [1,1], [2,1], [3,1]],
         [[0,1], [1,1], [2,1], [3,1]],
     ]
-
-
 }
  
-
+const playgroundWith = 10 
+const playgroundHeight = 20  
+let playground
+let oldTetromino
+let tetromino
+let current
+let score = 0
 
 class Point {
     constructor(x, y){
@@ -87,153 +91,67 @@ class Point {
         this.y = y
     }
 }
-
+ 
 class Playground {
     
     constructor(width, height){
         this.width = width
         this.height = height        
         this.maps = Array.from(Array(height),() => Array(width).fill(null))
+        // this.build = this.build.bind(this)
+        // this.rebuild = this.rebuild.bind(this)
     }
     build(){
         this.playground = document.getElementById('playground')
         for(let y = 0 ; y < this.height ; y++ ){
             for(let x = 0 ; x < this.width ; x ++) {
-                let point = document.createElement('div')
-                point.id = `p-${x}-${y}`
-                this.maps[y][x] = point
-                this.playground.appendChild(point)
+                this.maps[y][x] = document.createElement('div')
+                this.playground.appendChild(this.maps[y][x])
             }
         }
         this.playground.classList.add('playground')
     }
+ 
+    
+    rebuild(addRow){
+        let rows = Array.from(Array(addRow),() => Array(this.width).fill(null))
+        for(let y = 0 ; y < addRow ; y++ ){
+            for(let x = 0 ; x < this.width ; x ++) {
+                rows[y][x] = document.createElement('div')
+            }
+        }
+        this.maps = rows.concat(this.maps)
+        
+        for(let y = 0 ; y < this.height ; y++ ){
+            for(let x = 0 ; x < this.width ; x ++) {
+                this.playground.appendChild(this.maps[y][x])
+            }
+        }
 
-    isOutOfBoundary(x, y){
-        return x < 0 || x > this.width - 1 || y > this.height - 1
-    }
-
-    isBottom(y){
-        return y >= this.height - 1
     }
 }
 
-
-
-//retation : cw, ccw 
-//position : a
 class Tetromino {
-    constructor(type, direction, current, playground){
+    constructor(type, direction){
         this.type = type 
         this.direction = direction
         this.position = POSITIONS[this.type][this.direction];
-        this.current = current
-        this.playground = playground
-    }
-    
-    show(){
-        this.draw()
-    }
-
-    move(point){ 
-        if(this.endOfMap(this.position, point)) return
-        this.erase()        
-        this.current.x += point.x
-        this.current.y += point.y
-        this.draw()
-    }
-
-    endOfMap(position, point){
-        return position.some(element => this.playground.isOutOfBoundary(element[0] + this.current.x + point.x, element[1] + this.current.y + point.y))
-    }
- 
-    
-    draw(){ 
-        this.position.forEach(element => {   
-            let col = element[0] + this.current.x
-            let row = element[1] + this.current.y
-            this.playground.maps[row][col].classList.add('tetromino')
-            this.playground.maps[row][col].style.backgroundColor = COLORS[this.type]
-        });
-    }
-
-    erase(){
-        this.position.forEach(element => {            
-            let col = element[0] + this.current.x
-            let row = element[1] + this.current.y
-            this.playground.maps[row][col].classList.remove('tetromino')
-            this.playground.maps[row][col].style.backgroundColor = ''
-        });
-    }
- 
-
-    rotate(){
-        //debugger
-        let direction = this.direction == 3 ? 0 : this.direction + 1
-        let position = POSITIONS[this.type][direction]
-        if(this.endOfMap(position, new Point(0,0))) return
-        this.erase()        
-        this.direction = direction
-        this.position = position
-        this.draw()
-    }
-
-
-    isBottom(){
-        return this.position.some(element => { 
-            let y = element[1] + this.current.y 
-            return this.playground.isBottom(y)
-        })
-    }
-
-    nextFreezed(){
-        return this.position.some(element => {
-            let x = element[0] + this.current.x
-            let y = element[1] + this.current.y 
-            return  this.playground.maps[y+1][x].classList.contains('freezed')
-        })
-    }
-
-    freeze(){
-        this.position.forEach(element => {            
-            let col = element[0] + this.current.x
-            let row = element[1] + this.current.y
-            this.playground.maps[row][col].classList.remove('tetromino')
-            this.playground.maps[row][col].classList.add('freezed')
-            this.playground.maps[row][col].style.backgroundColor = COLORS[this.type]
-        });
     }
 }
- 
-
-
-
-const playgroundWith = 10 
-const playgroundHeight = 20  
  
 
 //수정할 내용 
 //컨트롤러 함수를 테트로미노 클래스에서 컨트롤러 클래스를 만들고 그리로 옮기자.
 
 document.addEventListener('DOMContentLoaded',() => {
-     
-    const playground = new Playground(playgroundWith, playgroundHeight);
+    playground = new Playground(playgroundWith, playgroundHeight);
     playground.build();
-
-    let tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground)
-    tetromino.show()
+    
+    current = new Point(0, 0)
+    tetromino = new Tetromino(tTetromino, 0)
+    draw()
  
-    let oldTetromino
-    function anotherTetromino(){
-        oldTetromino = Object.assign({}, tetromino)
-        tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground)
-        tetromino.show()
-    }
-
-    function freeze(){
-        tetromino.freeze()
-        console.log("I died.")
-    }
-
+    
     ///move 
     function move(event){ 
         switch(event.key) {
@@ -241,49 +159,19 @@ document.addEventListener('DOMContentLoaded',() => {
                 rotate()
                 break
             case 'ArrowDown' : 
-                //moveDown()
                 moveToDown()
                 break
             case 'ArrowRight' : 
-                moveRight()      
+                moveToRight()      
                 break
             case 'ArrowLeft' :  
-                moveLeft() 
+                moveToLeft() 
                 break
             default:
                 break;
         }
     }
-
-    function rotate(){
-        tetromino.rotate()
-    }
-
-    function moveDown(){     
-
-        let isBottom = tetromino.isBottom() ? true : tetromino.nextFreezed()
-
-        if(isBottom){
-            console.log('no more play')
-            tetromino.freeze()
-            anotherTetromino()
-        }else{
-            tetromino.move(new Point(0,1))
-        }
-    }
-
-    function moveLeft(){     
-        tetromino.move(new Point(-1,0))
-    } 
-
-    function moveRight(){  
-        tetromino.move(new Point(1,0))
-    }
-
-     
-    
-    let current = new Point(0, 0);
-
+ 
     function erase(){
         tetromino.position.forEach(element => {            
             let col = element[0] + current.x
@@ -293,7 +181,7 @@ document.addEventListener('DOMContentLoaded',() => {
         });
     }
 
-    function draw(point){
+    function draw(){
         tetromino.position.forEach(element => {   
             let col = element[0] + current.x
             let row = element[1] + current.y
@@ -302,45 +190,69 @@ document.addEventListener('DOMContentLoaded',() => {
         });
     }
 
-
-    function isMovableDown(){
-        let isBottom = tetromino.position.some(element => { 
-            let y = element[1] + current.y
-            return playground.isBottom(y)
-        })
-         
-        return isBottom ? false : !tetromino.position.some(element => {
-            let x = element[0] + current.x
-            let y = element[1] + current.y + 1 
-            return playground.maps[y][x].classList.contains('freezed')
+    function movable(point){
+        return !tetromino.position.some(element => {
+            let x = element[0] + current.x + point.x
+            let y = element[1] + current.y + point.y 
+            return x < 0 || x > playground.width - 1 || y > playground.height - 1 || playground.maps[y][x].classList.contains('freezed')
         }) 
     }
 
-    function isMovableLeft(){
+    function isMovableDown(){
+        return movable(new Point(0, 1))
+    }
 
+    function isMovableLeft(){
+        return movable(new Point(-1, 0)) 
     }
 
     function isMovableRight(){
+        return movable(new Point(1, 0))
+    }
 
+    function isRotatable(position){
+        return !position.some(element => {
+            let x = element[0] + current.x
+            let y = element[1] + current.y 
+            return x < 0 || x > playground.width - 1 || y > playground.height - 1 || playground.maps[y][x].classList.contains('freezed')
+        }) 
+    }
+
+    function freeze(){
+        tetromino.position.forEach(element => {            
+            let col = element[0] + current.x
+            let row = element[1] + current.y
+            playground.maps[row][col].classList.remove('tetromino')
+            playground.maps[row][col].classList.add('freezed')
+            playground.maps[row][col].style.backgroundColor = COLORS[tetromino.type]
+        });
+    }
+
+    function newTetromino() {
+        oldTetromino = Object.assign({}, tetromino)
+        tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground)
+        current = new Point(0, 0);
+        draw()
     }
 
     function moveToDown(){
+
         let movable = isMovableDown()
         if(movable) {
             erase()        
             current.y += 1
             draw()
         }else{
-            //tetromino.freeze()
-            //anotherTetromino()   
-            //여기에 프리즈하고 
-            //새로운 테트로미노 하나 생성해라.
+            freeze()
+            caculateScore()
+            console.log(playground.maps)
+            newTetromino()   
         }
     }
-
+ 
     function moveToLeft(){
         let movable = isMovableLeft()
-        if(ok) {
+        if(movable) {
             erase()        
             current.x -= 1
             draw()
@@ -349,23 +261,46 @@ document.addEventListener('DOMContentLoaded',() => {
 
     function moveToRight(){
         let movable = isMovableRight()
-        if(ok) {
+        if(movable) {
             erase()        
             current.x += 1
             draw()
         }
     }
 
-
-
-
-
-
-
-
-
-
+    function rotate(){
+        let direction = tetromino.direction == 3 ? 0 : tetromino.direction + 1
+        let position = POSITIONS[tetromino.type][direction]
+        let rotatable = isRotatable(position)
+        if(rotatable){
+            erase()        
+            tetromino.direction = direction
+            tetromino.position = position
+            draw()
+        }
+    }
+ 
+    function caculateScore(){
+        //debugger
+        let addRow = 0
+        playground.maps.forEach((row, rowIndex) => {
+            if(row.every(col => col.classList.contains('freezed'))){
+                row.forEach((element) => {
+                    element.remove()
+                    score ++
+                })
+                playground.maps.splice(rowIndex,1)
+                addRow ++
+            }        
+        }) 
+        playground.rebuild(addRow)
+        console.log(`score: ${score}`)
+    }
     document.addEventListener('keydown', move)
 
- 
+
+    let timeerId = setInterval(()=>{
+        moveToDown()
+    }, 1000)
+
 })
