@@ -175,11 +175,15 @@ document.addEventListener('DOMContentLoaded',() => {
         if(gameOver){ return true}
         console.log(event.keyCode)
         
-        // if(event.keyCode == 32){
+        if(event.keyCode == 32){
         //     clearInterval(timerId)
         //     timerId = setInterval(()=>{ moveToDown() }, 10)
         //     return 
-        // }
+            for(let i = current.y  ; i < 19 ; i ++){
+                moveToDown()
+            }
+            return 
+        }
 
         switch(event.key) {
             case 'ArrowUp' : 
