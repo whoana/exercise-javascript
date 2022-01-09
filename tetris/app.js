@@ -173,30 +173,25 @@ document.addEventListener('DOMContentLoaded',() => {
     ///move 
     function move(event){ 
         if(gameOver){ return true}
-        console.log(event.keyCode)
-        
-        if(event.keyCode == 32){
-        //     clearInterval(timerId)
-        //     timerId = setInterval(()=>{ moveToDown() }, 10)
-        //     return 
-            for(let i = current.y  ; i < 19 ; i ++){
-                moveToDown()
-            }
-            return 
-        }
+         
 
-        switch(event.key) {
-            case 'ArrowUp' : 
+        switch(event.keyCode) {
+            case 32 : 
+                for(let i = current.y  ; i < 19 ; i ++){
+                    moveToDown()
+                }
+                break
+            case 37 : 
+                moveToLeft() 
+                break
+            case 38 :
                 rotate()
                 break
-            case 'ArrowDown' : 
+            case 40 :
                 moveToDown()
                 break
-            case 'ArrowRight' : 
+            case 39 :
                 moveToRight()      
-                break
-            case 'ArrowLeft' :  
-                moveToLeft() 
                 break
             default:
                 break;
