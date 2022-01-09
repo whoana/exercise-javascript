@@ -23,45 +23,55 @@ const sTetromino = Symbol('sTetromino')
 const tTetromino = Symbol('tTetromino')
 const zTetromino = Symbol('zTetromino')
 
+const tetrominoSymbols = [
+    iTetromino,
+    jTetromino,
+    lTetromino,
+    oTetromino,
+    sTetromino,
+    tTetromino,
+    zTetromino,
+]
+
 const COLORS = {
-    [iTetromino]: "grey",
-    [jTetromino]: "grey",
-    [lTetromino]: "grey",
-    [oTetromino]: "grey",
-    [sTetromino]: "grey",
-    [tTetromino]: "yellow",
-    [zTetromino]: "grey"
+    [iTetromino]: "magenta",
+    [jTetromino]: "blue",
+    [lTetromino]: "orange",
+    [oTetromino]: "yellow",
+    [sTetromino]: "green",
+    [tTetromino]: "violet",
+    [zTetromino]: "red"
 }
 const POSITIONS ={
     [iTetromino]: [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[1,2], [2,2], [3,2], [4,2]],
+        [[2,1], [2,2], [2,3], [2,4]],
+        [[0,2], [1,2], [2,2], [3,2]],
+        [[2,0], [2,1], [2,2], [2,3]],
     ],
     [jTetromino]: [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,0], [0,1], [1,1], [2,1]],
+        [[1,0], [1,1], [1,2], [2,0]],
+        [[0,1], [1,1], [2,1], [2,2]],
+        [[1,0], [1,1], [1,2], [0,2]],
     ],
     [lTetromino]: [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,1], [1,1], [2,1], [2,0]],
+        [[1,0], [1,1], [1,2], [2,2]],
+        [[0,2], [0,1], [1,1], [2,1]],
+        [[0,0], [1,0], [1,1], [1,2]],
     ],
     [oTetromino]: [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[1,0], [2,0], [1,1], [2,1]],
+        [[1,1], [2,1], [1,2], [2,2]],
+        [[0,1], [1,1], [0,2], [1,2]],
+        [[0,0], [1,0], [0,1], [1,1]],
     ],
     [sTetromino]: [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [1,3]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[1,0], [2,0], [0,1], [1,1]],
+        [[1,0], [1,1], [2,1], [2,2]],
+        [[0,2], [1,2], [1,1], [2,1]],
+        [[0,0], [0,1], [1,1], [1,2]],
     ],
     [tTetromino]: [
         [[0,1], [1,1], [1,0], [2,1]],
@@ -70,10 +80,10 @@ const POSITIONS ={
         [[0,1], [1,0], [1,1], [1,2]],
     ],
     [zTetromino]: [
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
-        [[0,1], [1,1], [2,1], [3,1]],
+        [[0,0], [1,0], [1,1], [2,1]],
+        [[2,0], [1,1], [2,1], [1,2]],
+        [[0,1], [1,1], [1,2], [2,2]],
+        [[1,0], [0,1], [1,1], [0,2]],
     ]
 }
  
@@ -84,7 +94,8 @@ let oldTetromino
 let tetromino
 let current
 let score = 0
-
+let timerId
+let gameOver = false
 class Point {
     constructor(x, y){
         this.x = x
@@ -147,13 +158,29 @@ document.addEventListener('DOMContentLoaded',() => {
     playground = new Playground(playgroundWith, playgroundHeight);
     playground.build();
     
-    current = new Point(0, 0)
-    tetromino = new Tetromino(tTetromino, 0)
+
+
+    current = new Point(3, 0)
+    let type = iTetromino
+    //let type = tetrominoSymbols[Math.floor(Math.random() * 7)]
+    
+    tetromino = new Tetromino(type, 0)
+    
+    
     draw()
  
     
     ///move 
     function move(event){ 
+        if(gameOver){ return true}
+        console.log(event.keyCode)
+        
+        // if(event.keyCode == 32){
+        //     clearInterval(timerId)
+        //     timerId = setInterval(()=>{ moveToDown() }, 10)
+        //     return 
+        // }
+
         switch(event.key) {
             case 'ArrowUp' : 
                 rotate()
@@ -230,9 +257,11 @@ document.addEventListener('DOMContentLoaded',() => {
 
     function newTetromino() {
         oldTetromino = Object.assign({}, tetromino)
-        tetromino = new Tetromino(tTetromino, 0, new Point(0,0), playground)
-        current = new Point(0, 0);
+        let type = tetrominoSymbols[Math.floor(Math.random() * 7)]
+        tetromino = new Tetromino(type, 0)
+        current = new Point(3, 0);
         draw()
+        
     }
 
     function moveToDown(){
@@ -243,10 +272,12 @@ document.addEventListener('DOMContentLoaded',() => {
             current.y += 1
             draw()
         }else{
+            
+            
             freeze()
-            caculateScore()
-            console.log(playground.maps)
+            caculateScore()        
             newTetromino()   
+            endOfGame()
         }
     }
  
@@ -296,11 +327,21 @@ document.addEventListener('DOMContentLoaded',() => {
         playground.rebuild(addRow)
         console.log(`score: ${score}`)
     }
+
+    
+
+    function endOfGame(){
+        if(!movable(new Point(0,1))){
+            console.log('end of game')
+            clearInterval(timerId)
+            gameOver = true;
+            
+        } 
+    }
+ 
     document.addEventListener('keydown', move)
 
 
-    let timeerId = setInterval(()=>{
-        moveToDown()
-    }, 1000)
+    timerId = setInterval(()=>{ moveToDown() }, 1000)
 
 })
